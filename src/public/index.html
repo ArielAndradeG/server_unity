@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Socket.IO tester</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+</head>
+
+<body>
+
+  <div>
+    <div class="row">
+      <div class="card col-md-4">
+        <form class="card-body" id ="login-form">
+          <div class="form-group">
+            <label>idGame</label>
+            <input type="text" class="form-control" id="login-game" value="">
+          </div>
+          <div class="form-group">
+            <label>token</label>
+            <input type="text" class="form-control" id="login-token" value=''>
+          </div>
+          <button type="submit" class="btn btn-success">Acceder</button>
+        </form>
+      </div>
+      <div class="card col-md-4">
+        <form class="card-body" id ="message-form">
+          <div class="form-group">
+            <label>mensaje</label>
+            <input type="text" class="form-control" id="message-input" value="">
+          </div>
+          <button type="submit" class="btn btn-success">Enviar</button>
+        </form>
+      </div>
+        <div class="card col-md-4" id="messages-container">
+            <!-- Chat Messages Here -->
+        </div>
+    </div>
+  </div>
+</body>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+<!--script src="/src/public/main.js"></script-->
+<script>
+    window.addEventListener('load', () => {
+    const $loginForm = document.getElementById('login-form');
+    const $loginGame = document.getElementById('login-game');
+    const $loginToken = document.getElementById('login-token');
+
+    const $messageForm = document.getElementById('message-form');
+    const $messageInput = document.getElementById('message-input');
+
+    const $messagesContainer = document.getElementById('messages-container')
+
+    let username;
+    let socket;
+
+    function login(form) {
+        socket = ioConnect();
+        username = form.token;
+        socket.emit('login', form);
+    }
+
+    $loginForm.addEventListener('submit', function (event) {
+        event.preventDefault()
+        let form = {"game":$loginGame.value,"token":$loginToken.value};
+        login(form)
+        // Remove the login form and
+        // show the chat message form
+        $loginForm.remove()
+        $messageForm.classList.remove('hidden')
+    })
+
+    $messageForm.addEventListener('submit', function (event) {
+        event.preventDefault()
+        let message = $messageInput.value;
+        $messageInput.value = "";
+        // Send
+        socket.emit('msg', message);
+    })
+
+    function ioConnect() {
+        let socket = io()
+        window.onunload = () => socket.close()
+        // Recieve Message
+        socket.on('msg', (data) => {
+            if (data.from != username) {
+                say(data.from, data.message)
+            } else {
+                say('me', data.message)
+            }
+        })
+        return socket;
+    }
+
+    function say(name, message) {
+        $messagesContainer.innerHTML +=
+            `<div class="chat-message">
+            <span style="color: red; font-weight: bold;">${name}:</span> ${message}
+        </div>`
+        // Scroll down to last message
+        $messagesContainer.scrollTop = $messagesContainer.scrollHeight
+    }
+  });
+</script>
+
+<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+  integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+  integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+  integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+
+</html>
