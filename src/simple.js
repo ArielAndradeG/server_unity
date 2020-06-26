@@ -8,7 +8,6 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
-//sockets = require('./private/socket-chat.js')(io);
 sockets = require('./listener/socket_TTT.js')(io);
 
 http.listen(app.get('port'), function () {

@@ -1,5 +1,6 @@
 const { Game, Player } = require("./game.js");
 const persistencia = require('../../database/database.js');
+const acciones = ["Actualizar","Tirar","Acceder"];
 
 var partidas = [
     //{'room':'room','game':Game}
@@ -10,43 +11,77 @@ var usuarios = {
 
 var self = module.exports = {
     checarMovimiento: (mensaje) => {
-        var resultado = {};
-        var idSesion = mensaje.ses;
-
-        if(mensaje.nom == "Acc"){
-            resultado.response = joinGame(idSesion,resultado.user);
-        }
-        else if(mensaje.nom == "Tir"){
-            if(existGame(idSesion)){
-                resultado.response = getGame(idSesion).playTurn(result.row, result.column, result.user);
-            }else{
-                resultado.response= "tu partida no existe";
-            }
-        }else{
-            resultado.response= "accion invalida";
-        }
-
+		var resultado = mensaje;
+        if(mensaje.request.accion == "Tirar"){
+			resultado.response = {};
+			resultado.response.para = "emisor";
+            resultado.response.texto = "hi";//getGame(mensaje.sesion).playTurn(mensaje.fil, mensaje.col, mensaje.token);
+			
+		}
         return resultado;
     },
     checarGestor: (mensaje,socket) => {
-        var respuesta;
-        if(mensaje.nom == "Acc"){
-            respuesta = gestionarAcceso(mensaje,socket)
-        }
-        return respuesta;
+        var resultado;
+        if(mensaje.request.accion == "Acceder"){
+            resultado = gestionarAcceso(mensaje,socket);
+        }else if(mensaje.request.accion == "Actualizar"){
+			resultado = gestionarActualizar(mensaje);
+		}
+        return resultado;
     },
     desconexion: (socket) =>{
+		respuesta = {response:{"para":"todos","mensaje":"usuario ha salido","nombre":"","room":usuarios[socket.id]}}
         delete usuarios[socket.id];
-    }
+		return respuesta;
+    },
+	validarUsuario: (mensaje) =>{
+		var resultado = mensaje;
+        var idSesion = mensaje.sesion;
+		var token = mensaje.token;
+		
+		if(existGame(idSesion)){
+			
+		}else{
+			resultado.estatus = "error";
+            resultado.response= "partida no existe";
+			resultado.para = "emisor";
+        }
+		return resultado;
+	},
+	validarAccion: (mensaje) =>{
+		var resultado = mensaje;
+		var existe = partidas.find(r => r.id === idPartida);
+		var existe = (existe)?true:false;
+		if(existe){
+			resultado.estatus = "ok";
+		}else{
+            resultado.estatus = "error";
+            resultado.response= "partida no existe";
+			resultado.para = "emisor";
+        }
+		return resultado;
+	}
 }
 
 function gestionarAcceso(form,socket){
-    usuarios[socket.id] = form.nam;
-    socket.join(form.ses);
+    usuarios[socket.id] = form.request.sesion;
+    socket.join(form.sesion);
+	console.log(usuarios);
+    return {
+		response:{
+			de: 'server',
+			para: 'emisor',
+			mensaje: `${form.nam}.`,
+			estatus: 'ok'
+		}
+	};
+}
+
+function gestionarActualizar(form){
     return {
         de: 'server',
         para: 'emisor',
-        mensaje: `${form.nam}.`,
+        mensaje: 'Actualizado',
         estatus: 'ok'
     };
 }

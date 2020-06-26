@@ -1,5 +1,5 @@
 class Game {
-    static wins = [7, 56, 448, 73, 146, 292, 273, 84];
+    //static wins = [7, 56, 448, 73, 146, 292, 273, 84];
 
     constructor($id, $room) {
         this.id = $id;
