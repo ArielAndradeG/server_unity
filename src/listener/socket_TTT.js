@@ -1,6 +1,23 @@
 const gestor = require('../games/TTT/gestor.js');
 
 exports = module.exports = function(io){
+	require('socketio-auth')(io, {
+	  authenticate: function (socket, data, callback) {
+		//get credentials sent by the client
+		var sesion = data.sesion;
+		var token = data.token
+		console.log(sesion,token);
+		io.to(socket.id).emit("respuesta",{user:"tal"});
+		return callback(null, true);
+		/*db.findUser('User', {username:username}, function(err, user) {
+	 
+		  //inform the callback of auth success/failure
+		  if (err || !user) return callback(new Error("User not found"));
+		  return callback(null, user.password == password);
+		});*/
+	  }
+	});
+	
     io.on('connection', function(socket) {
         console.log('new connection: ' + socket.id);
     
