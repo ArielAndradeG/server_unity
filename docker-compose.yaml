@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+    web:
+        container_name: web-app
+        restart: always
+        build: .
+        ports: 
+            - "3000:3000"
+        links: 
+            - mongo
+        volumes:
+            - .:/run/server_unity
+    mongo:
+        container_name: web-db
+        image: mongo
+        ports: 
+            - "27017:27017"
+        volumes:
+            - ./data/db:/data/db
+        logging:
+            driver: none 
